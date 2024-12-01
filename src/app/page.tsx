@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import ReactMarkdown from 'react-markdown';
 
 interface SavedDocument {
   inputText: string;
@@ -9,11 +10,14 @@ interface SavedDocument {
   savedAt: string;
 }
 
+type TabType = 'input' | 'preview';
+
 export default function Home() {
   const [inputText, setInputText] = useState('');
   const [previewText, setPreviewText] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabType>('input');
 
   const handleGenerate = async () => {
     if (!inputText) return;
@@ -99,30 +103,68 @@ export default function Home() {
     <main className="container mx-auto p-4 h-screen">
       <h1 className="text-2xl font-bold mb-4">技術文書読み上げアシスタント</h1>
       <div className="grid grid-cols-2 gap-4 h-[calc(100vh-8rem)]">
-        {/* 左側：入力エリア */}
-        <div className="border rounded-lg p-4">
-          <textarea
-            className="w-full h-full p-2 border rounded-lg resize-none"
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            placeholder="ここに技術文書を入力してください..."
-          />
-        </div>
-
-        {/* 右側：プレビューエリア */}
-        <div className="border rounded-lg p-4 flex flex-col">
-          <div className="flex-grow overflow-auto border rounded-lg p-2 mb-4">
-            {isGenerating ? (
-              <div className="flex items-center justify-center h-full">
-                <div className="animate-pulse">生成中...</div>
-              </div>
+        {/* 左側：タブ付きパネル */}
+        <div className="border rounded-lg flex flex-col overflow-hidden">
+          {/* タブヘッダー（固定） */}
+          <div className="flex border-b h-12 flex-shrink-0">
+            <button
+              className={`flex-1 px-4 py-2 text-center ${
+                activeTab === 'input'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-100 hover:bg-gray-200'
+              }`}
+              onClick={() => setActiveTab('input')}
+            >
+              入力
+            </button>
+            <button
+              className={`flex-1 px-4 py-2 text-center ${
+                activeTab === 'preview'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-100 hover:bg-gray-200'
+              }`}
+              onClick={() => setActiveTab('preview')}
+            >
+              プレビュー
+            </button>
+          </div>
+          
+          {/* タブコンテンツ（スクロール可能） */}
+          <div className="flex-1 overflow-auto">
+            {activeTab === 'input' ? (
+              <textarea
+                className="w-full h-full p-4 resize-none border-none outline-none"
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                placeholder="ここに技術文書を入力してください..."
+              />
             ) : (
-              <div className="whitespace-pre-wrap">
-                {previewText || '生成されたテキストがここに表示されます'}
+              <div className="p-4 prose prose-sm max-w-none">
+                <ReactMarkdown>{inputText || '入力テキストがありません'}</ReactMarkdown>
               </div>
             )}
           </div>
-          <div className="flex gap-2">
+        </div>
+
+        {/* 右側：生成結果エリア */}
+        <div className="border rounded-lg flex flex-col overflow-hidden">
+          {/* コンテンツエリア（スクロール可能） */}
+          <div className="flex-1 overflow-auto p-4">
+            <div className="prose prose-sm max-w-none">
+              {isGenerating ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="animate-pulse">生成中...</div>
+                </div>
+              ) : (
+                <ReactMarkdown>
+                  {previewText || '生成されたテキストがここに表示されます'}
+                </ReactMarkdown>
+              )}
+            </div>
+          </div>
+          
+          {/* ボタングループ（固定） */}
+          <div className="flex gap-2 p-4 border-t bg-white flex-shrink-0">
             <Button 
               className="flex-1" 
               onClick={handleGenerate}
