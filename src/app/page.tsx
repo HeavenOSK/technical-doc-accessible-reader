@@ -11,6 +11,7 @@ interface SavedDocument {
 }
 
 type TabType = 'input' | 'preview' | 'saved';
+type EndpointType = 'openai' | 'claude';
 
 export default function Home() {
   const [inputText, setInputText] = useState('');
@@ -20,12 +21,19 @@ export default function Home() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('input');
   const [savedDocuments, setSavedDocuments] = useState<SavedDocument[]>([]);
+  const [selectedEndpoint, setSelectedEndpoint] = useState<EndpointType>('openai');
 
   useEffect(() => {
     // コンポーネントマウント時に localStorage からデータを読み込む
     try {
       const savedDocs = JSON.parse(localStorage.getItem('documents') || '[]');
       setSavedDocuments(savedDocs);
+      
+      // エンドポイントの設定を読み込む
+      const savedEndpoint = localStorage.getItem('selectedEndpoint') as EndpointType;
+      if (savedEndpoint) {
+        setSelectedEndpoint(savedEndpoint);
+      }
     } catch (error) {
       console.error('保存データの読み込みに失敗しました:', error);
     }
@@ -38,6 +46,12 @@ export default function Home() {
     };
   }, []);
 
+  // エンドポイントの切り替え時にlocalStorageに保存
+  const handleEndpointChange = (endpoint: EndpointType) => {
+    setSelectedEndpoint(endpoint);
+    localStorage.setItem('selectedEndpoint', endpoint);
+  };
+
   const handleGenerate = async () => {
     if (!inputText) return;
     
@@ -46,7 +60,8 @@ export default function Home() {
       setPreviewText(''); // リセット
       setActiveTab('preview');
 
-      const response = await fetch('/api/translate', {
+      const endpoint = selectedEndpoint === 'openai' ? '/api/translate' : '/api/translate-claude';
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -148,7 +163,23 @@ export default function Home() {
 
   return (
     <main className="container mx-auto p-4 h-screen">
-      <h1 className="text-2xl font-bold mb-4">技術文書読み上げアシスタント</h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">技術文書読み上げアシスタント</h1>
+        <div className="flex gap-2">
+          <Button
+            variant={selectedEndpoint === 'openai' ? 'default' : 'outline'}
+            onClick={() => handleEndpointChange('openai')}
+          >
+            OpenAI
+          </Button>
+          <Button
+            variant={selectedEndpoint === 'claude' ? 'default' : 'outline'}
+            onClick={() => handleEndpointChange('claude')}
+          >
+            Claude
+          </Button>
+        </div>
+      </div>
       <div className="grid grid-cols-2 gap-4 h-[calc(100vh-8rem)]">
         {/* 左側：タブ付きパネル */}
         <div className="border rounded-lg flex flex-col overflow-hidden">
