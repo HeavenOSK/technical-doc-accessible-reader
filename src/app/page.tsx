@@ -44,6 +44,7 @@ export default function Home() {
     try {
       setIsGenerating(true);
       setPreviewText(''); // リセット
+      setActiveTab('preview');
 
       const response = await fetch('/api/translate', {
         method: 'POST',
@@ -142,7 +143,7 @@ export default function Home() {
   const handleLoadDocument = (doc: SavedDocument) => {
     setInputText(doc.inputText);
     setPreviewText(doc.generatedText);
-    setActiveTab('input');
+    setActiveTab('preview');
   };
 
   return (
