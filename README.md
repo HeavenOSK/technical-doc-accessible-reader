@@ -1,37 +1,48 @@
+# Technical Document Accessible Reader
 
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app) and designed to be fun and easy to get your hands dirty with the AI SDK.
+技術文書の読み上げテキストを生成するデモアプリケーションです。
 
-## Getting Started
+## 概要
 
-First, run the development server:
+このプロジェクトは、技術文書をより分かりやすい読み上げテキストに変換するデモンストレーションを提供します。OpenAI APIを活用して、技術的な内容をよりアクセシブルな形式に変換します。
+
+## 技術スタック
+
+- [Next.js 14](https://nextjs.org/)
+- [OpenAI SDK](https://platform.openai.com/)
+- [TailwindCSS](https://tailwindcss.com/)
+- [TypeScript](https://www.typescriptlang.org/)
+
+## セットアップ
+
+1. リポジトリのクローン:
+```bash
+git clone https://github.com/HeavenOSK/technical-doc-accessible-reader.git
+cd technical-doc-accessible-reader
+```
+
+2. 依存関係のインストール:
+```bash
+npm install
+# または
+pnpm install
+```
+
+3. 環境変数の設定:
+- `.env.example`ファイルを`.env`にコピー
+- OpenAI APIキーを設定:
+```
+OPENAI_API_KEY=your_api_key_here
+```
+
+## 開発サーバーの起動
+
+開発サーバーを起動するには、以下のコマンドを実行します：
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
+# または
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+[http://localhost:3000](http://localhost:3000)をブラウザで開いて、アプリケーションにアクセスできます。
