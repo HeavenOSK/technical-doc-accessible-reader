@@ -140,7 +140,7 @@ export default function Home() {
               />
             ) : (
               <div className="p-4 prose prose-sm max-w-none">
-                <ReactMarkdown>{inputText || '入力テキストがありません'}</ReactMarkdown>
+                <ReactMarkdown className="markdown">{inputText || '入力テキストがありません'}</ReactMarkdown>
               </div>
             )}
           </div>
@@ -156,7 +156,7 @@ export default function Home() {
                   <div className="animate-pulse">生成中...</div>
                 </div>
               ) : (
-                <ReactMarkdown>
+                <ReactMarkdown className="markdown">
                   {previewText || '生成されたテキストがここに表示されます'}
                 </ReactMarkdown>
               )}
