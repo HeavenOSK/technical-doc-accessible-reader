@@ -13,10 +13,51 @@ export default function Home() {
   const [inputText, setInputText] = useState('');
   const [previewText, setPreviewText] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  const handleGenerate = () => {
-    // TODO: ここで技術文書を読みやすい形式に変換する処理を実装
-    setPreviewText(inputText);
+  const handleGenerate = async () => {
+    if (!inputText) return;
+    
+    try {
+      setIsGenerating(true);
+      setPreviewText(''); // リセット
+
+      const response = await fetch('/api/translate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: inputText }),
+      });
+
+      if (!response.ok) {
+        throw new Error('翻訳リクエストに失敗しました');
+      }
+
+      // レスポンスをストリームとして読み込む
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (!reader) {
+        throw new Error('ストリームの読み込みに失敗しました');
+      }
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        // 受信したチャンクをデコードして表示テキストに追加
+        const chunk = decoder.decode(value, { stream: true });
+        setPreviewText((prev) => prev + chunk);
+        setIsGenerating(false);
+      }
+
+    } catch (error) {
+      console.error('生成エラー:', error);
+      alert('テキストの生成に失敗しました');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const handleSpeak = () => {
@@ -70,12 +111,32 @@ export default function Home() {
 
         {/* 右側：プレビューエリア */}
         <div className="border rounded-lg p-4 flex flex-col">
-          <div className="flex-grow overflow-auto border rounded-lg p-2 mb-4 flex justify-center items-center">
-            {previewText || '生成されたテキストがここに表示されます'}
+          <div className="flex-grow overflow-auto border rounded-lg p-2 mb-4">
+            {isGenerating ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="animate-pulse">生成中...</div>
+              </div>
+            ) : (
+              <div className="whitespace-pre-wrap">
+                {previewText || '生成されたテキストがここに表示されます'}
+              </div>
+            )}
           </div>
           <div className="flex gap-2">
-            <Button className="flex-1" onClick={handleGenerate}>生成</Button>
-            <Button className="flex-1" onClick={handleSpeak}>読み上げ</Button>
+            <Button 
+              className="flex-1" 
+              onClick={handleGenerate}
+              disabled={isGenerating || !inputText}
+            >
+              {isGenerating ? '生成中...' : '生成'}
+            </Button>
+            <Button 
+              className="flex-1" 
+              onClick={handleSpeak}
+              disabled={isGenerating || !previewText}
+            >
+              読み上げ
+            </Button>
             <Button 
               className="flex-1" 
               onClick={handleSave}
