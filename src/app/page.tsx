@@ -17,6 +17,7 @@ export default function Home() {
   const [previewText, setPreviewText] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('input');
   const [savedDocuments, setSavedDocuments] = useState<SavedDocument[]>([]);
 
@@ -28,6 +29,13 @@ export default function Home() {
     } catch (error) {
       console.error('保存データの読み込みに失敗しました:', error);
     }
+
+    // コンポーネントのクリーンアップ時に読み上げを停止
+    return () => {
+      if (speechSynthesis.speaking) {
+        speechSynthesis.cancel();
+      }
+    };
   }, []);
 
   const handleGenerate = async () => {
@@ -77,9 +85,31 @@ export default function Home() {
 
   const handleSpeak = () => {
     if ('speechSynthesis' in window) {
+      // 既に読み上げ中の場合は停止
+      if (speechSynthesis.speaking) {
+        speechSynthesis.cancel();
+        setIsSpeaking(false);
+        return;
+      }
+
       const utterance = new SpeechSynthesisUtterance(previewText);
       utterance.lang = 'ja-JP';
+      
+      // 読み上げ終了時のハンドラ
+      utterance.onend = () => {
+        setIsSpeaking(false);
+      };
+
+      // 読み上げ開始
+      setIsSpeaking(true);
       speechSynthesis.speak(utterance);
+    }
+  };
+
+  const handleStopSpeak = () => {
+    if (speechSynthesis.speaking) {
+      speechSynthesis.cancel();
+      setIsSpeaking(false);
     }
   };
 
@@ -223,10 +253,10 @@ export default function Home() {
             </Button>
             <Button 
               className="flex-1" 
-              onClick={handleSpeak}
+              onClick={isSpeaking ? handleStopSpeak : handleSpeak}
               disabled={isGenerating || !previewText}
             >
-              読み上げ
+              {isSpeaking ? '停止' : '読み上げ'}
             </Button>
             <Button 
               className="flex-1" 
