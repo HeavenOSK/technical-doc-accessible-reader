@@ -3,11 +3,12 @@
 import { createStreamableValue } from 'ai/rsc';
 import { CoreMessage, streamText } from 'ai';
 import { openai } from '@ai-sdk/openai';
-import { Weather } from '@/components/weather';
 import { generateText } from 'ai';
 import { createStreamableUI } from 'ai/rsc';
 import { ReactNode } from 'react';
 import { z } from 'zod';
+import fs from 'fs/promises';
+import path from 'path';
 
 export interface Message {
   role: 'user' | 'assistant';
@@ -15,6 +16,36 @@ export interface Message {
   display?: ReactNode;
 }
 
+export interface SavedDocument {
+  inputText: string;
+  generatedText: string;
+  savedAt: string;
+}
+
+// Save Document
+export async function saveDocument(inputText: string, generatedText: string): Promise<void> {
+  const document: SavedDocument = {
+    inputText,
+    generatedText,
+    savedAt: new Date().toISOString(),
+  };
+
+  try {
+    // knowledge/projects/shared/documents ディレクトリに保存
+    const saveDir = path.join(process.cwd(), 'knowledge', 'projects', 'shared', 'documents');
+    await fs.mkdir(saveDir, { recursive: true });
+    
+    const fileName = `doc-${Date.now()}.json`;
+    await fs.writeFile(
+      path.join(saveDir, fileName),
+      JSON.stringify(document, null, 2),
+      'utf-8'
+    );
+  } catch (error) {
+    console.error('Failed to save document:', error);
+    throw new Error('ドキュメントの保存に失敗しました');
+  }
+}
 
 // Streaming Chat 
 export async function continueTextConversation(messages: CoreMessage[]) {
@@ -45,7 +76,6 @@ export async function continueConversation(history: Message[]) {
             .describe('The unit to display the temperature in'),
         }),
         execute: async ({ city, unit }) => {
-          stream.done(<Weather city={city} unit={unit} />);
           return `Here's the weather for ${city}!`; 
         },
       },
@@ -59,7 +89,6 @@ export async function continueConversation(history: Message[]) {
         role: 'assistant' as const,
         content:
           text || toolResults.map(toolResult => toolResult.result).join(),
-        display: stream.value,
       },
     ],
   };

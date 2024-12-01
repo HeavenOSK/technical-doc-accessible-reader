@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Header } from "@/components/header";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Next.js AI Lite App",
-  description: "AI with Next and AI SDK",
+  title: "技術文書読み上げアシスタント",
+  description: "技術文書を読みやすい形式に変換し、読み上げを支援します",
 };
 
 export default function RootLayout({
@@ -16,10 +15,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="ja">
       <body className={inter.className}>
-        <Header />
-        <main className="bg-muted/50 flex h-100vh flex-1 flex-col">
+        <main className="min-h-screen bg-background">
           {children}
         </main>
       </body>
