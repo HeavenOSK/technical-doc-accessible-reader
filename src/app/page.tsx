@@ -2,7 +2,12 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { saveDocument } from './actions';
+
+interface SavedDocument {
+  inputText: string;
+  generatedText: string;
+  savedAt: string;
+}
 
 export default function Home() {
   const [inputText, setInputText] = useState('');
@@ -22,12 +27,24 @@ export default function Home() {
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!inputText || !previewText) return;
     
     try {
       setIsSaving(true);
-      await saveDocument(inputText, previewText);
+      const document: SavedDocument = {
+        inputText,
+        generatedText: previewText,
+        savedAt: new Date().toISOString(),
+      };
+
+      // 既存のドキュメントを取得
+      const savedDocs = JSON.parse(localStorage.getItem('documents') || '[]');
+      // 新しいドキュメントを追加
+      savedDocs.push(document);
+      // 保存
+      localStorage.setItem('documents', JSON.stringify(savedDocs));
+      
       alert('ドキュメントを保存しました');
     } catch (error) {
       console.error('保存エラー:', error);
