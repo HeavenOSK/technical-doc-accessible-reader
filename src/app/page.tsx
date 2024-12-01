@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import ReactMarkdown from 'react-markdown';
 
@@ -10,7 +10,7 @@ interface SavedDocument {
   savedAt: string;
 }
 
-type TabType = 'input' | 'preview';
+type TabType = 'input' | 'preview' | 'saved';
 
 export default function Home() {
   const [inputText, setInputText] = useState('');
@@ -18,6 +18,17 @@ export default function Home() {
   const [isSaving, setIsSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('input');
+  const [savedDocuments, setSavedDocuments] = useState<SavedDocument[]>([]);
+
+  useEffect(() => {
+    // コンポーネントマウント時に localStorage からデータを読み込む
+    try {
+      const savedDocs = JSON.parse(localStorage.getItem('documents') || '[]');
+      setSavedDocuments(savedDocs);
+    } catch (error) {
+      console.error('保存データの読み込みに失敗しました:', error);
+    }
+  }, []);
 
   const handleGenerate = async () => {
     if (!inputText) return;
@@ -83,12 +94,11 @@ export default function Home() {
         savedAt: new Date().toISOString(),
       };
 
-      // 既存のドキュメントを取得
-      const savedDocs = JSON.parse(localStorage.getItem('documents') || '[]');
       // 新しいドキュメントを追加
-      savedDocs.push(document);
-      // 保存
-      localStorage.setItem('documents', JSON.stringify(savedDocs));
+      const updatedDocs = [...savedDocuments, document];
+      setSavedDocuments(updatedDocs);
+      // localStorage に保存
+      localStorage.setItem('documents', JSON.stringify(updatedDocs));
       
       alert('ドキュメントを保存しました');
     } catch (error) {
@@ -97,6 +107,12 @@ export default function Home() {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleLoadDocument = (doc: SavedDocument) => {
+    setInputText(doc.inputText);
+    setPreviewText(doc.generatedText);
+    setActiveTab('input');
   };
 
   return (
@@ -127,6 +143,16 @@ export default function Home() {
             >
               プレビュー
             </button>
+            <button
+              className={`flex-1 px-4 py-2 text-center ${
+                activeTab === 'saved'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-100 hover:bg-gray-200'
+              }`}
+              onClick={() => setActiveTab('saved')}
+            >
+              保存済み
+            </button>
           </div>
           
           {/* タブコンテンツ（スクロール可能） */}
@@ -138,9 +164,32 @@ export default function Home() {
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder="ここに技術文書を入力してください..."
               />
-            ) : (
+            ) : activeTab === 'preview' ? (
               <div className="p-4 prose prose-sm max-w-none">
                 <ReactMarkdown className="markdown">{inputText || '入力テキストがありません'}</ReactMarkdown>
+              </div>
+            ) : (
+              <div className="p-4">
+                {savedDocuments.length === 0 ? (
+                  <p className="text-gray-500">保存されたドキュメントはありません</p>
+                ) : (
+                  <div className="space-y-4">
+                    {savedDocuments.map((doc, index) => (
+                      <div
+                        key={index}
+                        className="border rounded p-4 cursor-pointer hover:bg-gray-50"
+                        onClick={() => handleLoadDocument(doc)}
+                      >
+                        <p className="font-medium mb-2">
+                          {doc.inputText.slice(0, 100)}...
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          保存日時: {new Date(doc.savedAt).toLocaleString()}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
