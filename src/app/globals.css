@@ -68,6 +68,11 @@
   @apply bg-gray-100 rounded p-4;
 }
 
+.translation pre {
+  white-space: pre-wrap !important;
+  line-height: 3 !important;
+}
+
 .markdown pre code {
   @apply block bg-transparent p-0 overflow-visible rounded-none;
 }

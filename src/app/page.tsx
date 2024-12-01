@@ -236,7 +236,7 @@ export default function Home() {
                   <div className="animate-pulse">生成中...</div>
                 </div>
               ) : (
-                <ReactMarkdown className="markdown">
+                <ReactMarkdown className="markdown translation">
                   {previewText || '生成されたテキストがここに表示されます'}
                 </ReactMarkdown>
               )}
