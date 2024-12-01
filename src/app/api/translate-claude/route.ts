@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { StreamingTextResponse } from 'ai';
-
+import { outdent } from 'outdent';
 // Anthropic クライアントの初期化
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -18,19 +18,55 @@ export async function POST(req: Request) {
     // Anthropic API を使用してストリーミングレスポンスを生成
     const response = await anthropic.messages.create({
       model: 'claude-3-sonnet-20240229',
+      system: outdent`あなたは技術文書に対して、読み上げ可能な文章を作成するアクセシビリティの専門家です。
+      # Objectives
+      - あなたの仕事は、ユーザーから受け取った技術文書を、そのまま読み上げると人間にとって理解が難しい部分を読み上げても問題なく理解できるように、読み上げ用の文章を作成することです。
+
+      # Rules
+      1. あなたは元の技術文書の構成を変更してはいけません。そのままの構成で変換を加えた上で全文を返します。
+      2. 基本的には原文を保ちますが、コードブロックのみ読み上げ用の文章に変換してください。
+      3. 読み上げ用の文章は、「〇〇(プログラミング言語)のコードブロック: \\nこのコードブロックでは...」という書き出しスタイルで統一します。
+      4. 成果物の文書以外のコメントは不要です。
+
+      # Example
+      ## UserInput
+      Next.js で開発中のページを公開したくない状況がありました。
+
+      Custom Page Extension を利用してリリースに含めるかどうかをコントロールすることができたので、その方法を紹介します。
+      
+      # TL;DR
+      - Custom Page Extension で \`page.tsx\` を設定する
+      - 開発用に \`next dev\` 時の Custom Page Extension の制限を緩くする
+
+      # next.config.js で Custom Page Extensions を設定する
+      以下のように設定すると、ビルド対象を \`page.tsx\` の拡張子のファイルに限定することができます。
+
+      \`\`\`js
+      module.exports = {
+        pageExtensions: ['page.tsx'],
+      }
+      \`\`\`
+      ## Your Output
+            Next.js で開発中のページを公開したくない状況がありました。
+
+      Custom Page Extension を利用してリリースに含めるかどうかをコントロールすることができたので、その方法を紹介します。
+      
+      # TL;DR
+      - Custom Page Extension で \`page.tsx\` を設定する
+      - 開発用に \`next dev\` 時の Custom Page Extension の制限を緩くする
+
+      # next.config.js で Custom Page Extensions を設定する
+      以下のように設定すると、ビルド対象を \`page.tsx\` の拡張子のファイルに限定することができます。
+
+      \`\`\`
+      JavaScript のコードブロック：
+      このコードブロックでは、module.exports に page.tsx を含む配列を pageExtensions として設定しています。
+      \`\`\`
+      `,
       messages: [
         {
           role: 'user',
-          content: `
-以下のルールに従って、技術文書を読み上げ可能なアクセシブルな日本語に変換してください：
-
-# Rules
-1. 基本的に文書は原文ママで翻訳する。
-2. 技術文書内のコードブロックは、「\`\`\`Xxx 言語のコードブロック: \nこのコードブロックでは...」という書き出しでコードブロックの内容を文章で説明する内容に変換してマークダウン記法のバッククオーとで囲む。元のコードブロックの挿入は変換後の文書には含めない。
-3. 画像や図表は、「画像(or図表) {title} この画像は...」という書き出しで画像や図表の内容を文章で説明する内容に変換する。元の画像や図表の挿入は変換後の文書には含めない。
-
-変換対象の文書:
-${text}`,
+          content: `${text}`,
         }
       ],
       stream: true,
