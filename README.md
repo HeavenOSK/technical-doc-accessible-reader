@@ -42,7 +42,7 @@ pnpm install
 - 必要なAPIキーを設定:
 ```
 OPENAI_API_KEY=your_openai_api_key_here
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
+ANTHROPIC_API_KEY=your_anthropic_api_key_here  # Claudeモデルを使用する場合に必要
 ```
 
 ## 開発サーバーの起動
@@ -66,3 +66,14 @@ pnpm dev
 5. 「保存」ボタンでドキュメントを保存
 
 選択したモデルの設定は自動的に保存され、ブラウザを再起動しても維持されます。
+
+## Claudeモデルの使用について
+
+Claudeモデルを使用する場合は、以下の手順が必要です：
+
+1. [Anthropic](https://www.anthropic.com/)でアカウントを作成
+2. APIキーを取得
+3. `.env`ファイルに`ANTHROPIC_API_KEY`を設定
+4. アプリケーション上部の「Claude」ボタンをクリックしてモデルを切り替え
+
+Claudeモデルは、特に長文や複雑な技術文書の変換に優れた性能を発揮します。ただし、APIキーの設定がない場合はOpenAIモデルのみが使用可能です。
